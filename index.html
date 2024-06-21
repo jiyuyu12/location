@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>관광지 오디오 가이드 마커 지도</title>
+</head>
+<body>
+<div id="map" style="width:100%;height:500px;"></div>
+
+<script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=3d25c8476f761ef3b1e190891c0c3e36"></script>
+<script>
+var mapContainer = document.getElementById('map'), // 지도를 표시할 div 
+    mapOption = { 
+        center: new kakao.maps.LatLng(37.566535, 126.9779692), // 지도의 중심좌표 (서울)
+        level: 8 // 지도의 확대 레벨
+    };
+
+var map = new kakao.maps.Map(mapContainer, mapOption); // 지도를 생성합니다
+
+// 마커를 생성하고 지도에 표시하는 함수
+function addMarker(data) {
+    var markerPosition = new kakao.maps.LatLng(data.latitude, data.longitude);
+    var marker = new kakao.maps.Marker({
+        position: markerPosition
+    });
+    marker.setMap(map);
+
+    var infowindow = new kakao.maps.InfoWindow({
+        content: '<div style="padding:5px;">' + data.name + '<br>' + data.description + '</div>'
+    });
+
+    kakao.maps.event.addListener(marker, 'click', function() {
+        infowindow.open(map, marker);
+    });
+}
+
+// API 키와 URL 설정
+var apiKey = 'YOUR_API_KEY';
+var apiUrl = `YOUR_API_URL?serviceKey=${apiKey}&type=json`; // 실제 API URL과 쿼리 파라미터를 사용
+
+// 공공데이터 포털 API로부터 데이터를 가져오는 함수
+function fetchTouristData() {
+    fetch(apiUrl)
+        .then(response => response.json())
+        .then(data => {
+            var guides = data.response.body.items.item; // 실제 응답 구조에 맞게 조정 필요
+            guides.forEach(guide => {
+                var guideData = {
+                    name: guide.title, // 실제 데이터 구조에 맞게 조정 필요
+                    latitude: guide.latitude,
+                    longitude: guide.longitude,
+                    description: guide.description // 실제 데이터 구조에 맞게 조정 필요
+                };
+                addMarker(guideData);
+            });
+        })
+        .catch(error => console.error('Error fetching data:', error));
+}
+
+// 데이터를 가져와서 마커를 추가
+fetchTouristData();
+
+</script>
+</body>
+</html>
